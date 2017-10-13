@@ -1,0 +1,153 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js"></script>
+		<style type="text/css">
+			.float-layout {
+				display: block;
+				float: left;
+				margin-left: 150px;
+				padding-bottom: 100px;
+				color: blue;
+			}
+			#numbers {
+				margin-right: 50px;
+			}
+			#greatest_q {
+				 padding-left: 40px;
+			}
+			#smallest_q {
+				 padding-left: 40px;
+			}
+		</style>
+	</head>
+	<body style="font-family: 'Open Sans'; font-size: 40px;">
+		<div id="greatest_q">Select the greatest number</div>
+		<div id="smallest_q">Select the smallest number</div>
+		<br />
+		<br />
+		<p id="numbers">
+		</p>
+		<br />
+		<br />
+		<svg width="100%" height="200" id="gs">
+			<text x="50%" y="40" font-family="Open Sans" font-size="45" text-anchor="middle" id="status"></text>
+		</svg>
+		<a href="Hint_bigsmall.html" style="float: left;">Hint</a>
+		<a href="answer_bigsmall.html" style="float: right;" id="help_link">Help</a>
+		<script>
+			window.onload = function () {
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				var gssvg = Snap("#gs");
+				var number_array = [];
+				var greater_found = false;
+				var completed = false;
+				var no_differ_till_digit_place = 0;
+				var flg_typ = 1;
+				gssvg.attr({visibility: "hidden"});
+				$('#smallest_q').css({visibility: "hidden"});
+				
+				// Generate random numbers
+				var digitsArray = generateRandomDigits(flg_typ, 7);
+				var randomRangeArray = generateRandomRangeArray(digitsArray[10], 7);
+				var numbersId = $('#numbers');
+				
+				var differ_num = '';
+				if(no_differ_till_digit_place >= 0 && flg_typ === 2) {
+					var differ_min = Math.pow(10, no_differ_till_digit_place);
+					differ_num = getRandomInt(differ_min, differ_min * 10 - 1).toString();
+				}
+				
+				var indx = 0;
+				digitsArray.forEach(function(digits) {
+					var minNumber = Math.pow(10, digits - differ_num.length - 2);
+					var randomNumber = differ_num + getRandomInt(minNumber, minNumber * 10 - 1) + randomRangeArray[indx++];
+					number_array.push(randomNumber);
+					numbersId.append('<div class="float-layout">' + randomNumber + '</div>');
+				});
+				number_array.sort(function(a, b) { return a-b; });
+				
+				$('.float-layout').click(function(event) {
+					var clicked = $(this);
+					var success = true;
+					
+					if((greater_found === true) && (parseInt(clicked.text(), 10) === parseInt(number_array[0], 10))) {
+						// check smallest
+						completed = true;
+						clicked.css("color", "green");
+					}
+					else if((greater_found === false) && (parseInt(clicked.text(), 10) === parseInt(number_array[number_array.length - 1], 10))) {
+						greater_found = true;
+						clicked.css("color", "green");
+						clicked.off('click');
+						$('#greatest_q').css({visibility: "hidden"});
+						$('#smallest_q').css({visibility: "visible"});
+					}
+					else {
+						clicked.css("color", "red");
+						gssvg.select('#status').attr({text: '! Try Again', fill: 'red'});
+						gssvg.attr({visibility: "visible"});
+						setTimeout(function(){ 
+							clicked.css("color", "blue");
+							gssvg.attr({visibility: "hidden"});
+						}, 3000);
+					}
+					
+					if(completed === true) {
+						$('#smallest_q').css({visibility: "hidden"});
+						$('#numbers').css({visibility: "hidden"});
+						
+						gssvg.select('#status').attr({text: 'Congratualtions !', fill: 'green'});
+						gssvg.attr({visibility: "visible"});
+					}
+				});
+				
+				function shuffle(array) {
+				  var currentIndex = array.length, temporaryValue, randomIndex;
+
+				  // While there remain elements to shuffle...
+				  while (0 !== currentIndex) {
+
+					// Pick a remaining element...
+					randomIndex = Math.floor(Math.random() * currentIndex);
+					currentIndex -= 1;
+
+					// And swap it with the current element.
+					temporaryValue = array[currentIndex];
+					array[currentIndex] = array[randomIndex];
+					array[randomIndex] = temporaryValue;
+				  }
+
+				  return array;
+				}
+				
+				function generateRandomDigits(flag_type, size) {
+					// Return different digits
+					if(flag_type === 1) {
+						var digitsArray = [2];
+						for(var i = 0; i < size; i++) digitsArray.push(digitsArray[i] + 1);
+						return shuffle(digitsArray);
+					}
+					// Same digits count
+					else if(flag_type === 2) {
+						var digitsArray = [getRandomInt(2, 9)];
+						for(var i = 0; i < size; i++) digitsArray.push(digitsArray[i]);
+						return digitsArray;
+					}
+				}
+				
+				function getRandomInt(min, max) {
+					return Math.floor(Math.random() * (max - min + 1)) + parseInt(min, 10);
+				}
+				
+				function generateRandomRangeArray(digits, size) {
+					var single_digits_array = [0,1,2,3,4,5,6,7,8,9];
+					return shuffle(single_digits_array);
+				}
+			}
+		</script>
+	<body>
+</html>
